@@ -1,0 +1,101 @@
+.contaier {
+    user-select: none;
+    background-color: #BCB09E;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 5px;
+}
+
+.row {
+    display: flex;
+}
+
+.col {
+    width: 100px;
+    height: 100px;
+    margin: 5px;
+    background-color: #CCC1B2;
+}
+
+.numDiv {
+    line-height: 100px;
+    text-align: center;
+    font-weight: 700;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    font-size: 50px;
+    font-family: "微软雅黑";
+    transition:  .5s background-color ,color .5s;
+    color: white;
+    z-index: 2;
+}
+
+.contaier .n2 {
+    background-color: #EFE5DA;
+    color: #786E64;
+}
+
+.contaier .n4 {
+    background-color: #ECE0C9;
+    color: #786E64;
+}
+
+.contaier .n8 {
+    background-color: #F1B179;
+    color: white;
+}
+
+.contaier .n16 {
+    background-color: #F69564;
+    color: white;
+}
+
+.contaier .n32 {
+    background-color: #F57D5F;
+    color: white;
+    
+
+}
+
+.contaier .n64 {
+    background-color: #F55E3A;
+    color: white;
+   
+
+}
+
+.contaier .n128 {
+    background-color: #EDCF70;
+    color: white;
+   
+
+}
+
+.contaier .n256 {
+    background-color: #EDCC61;
+    color: white;
+    
+
+}
+
+.contaier .n512 {
+    background-color: #EDC750;
+    color: white;
+    
+
+}
+.contaier .n1024 {
+    background-color: #ECC53E;
+    color: white;
+    
+
+}
+.contaier .n2048 {
+    background-color: #EEC22E;
+    color: white;
+    
+}

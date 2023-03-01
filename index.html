@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048</title>
+    <link rel="stylesheet" href="./2048.css">
+
+</head>
+
+<body>
+    <div class="contaier"></div>
+</body>
+<script src="./jquery.js"></script>
+<script>
+    var contaier = document.querySelector(".contaier");
+    var strhtml = "";
+    for (let i = 0; i < 4; i++) {
+        var col = "";
+        for (let j = 0; j < 4; j++) {
+            col += `<div class="col" data-isnum="false"  data-x="${i}" data-y="${j}"></div>`;
+        }
+        strhtml += `<div class="row" data-row="${i}">${col}</div>`
+    }
+    contaier.innerHTML = strhtml;
+    var cols = Array.from($(".col"));
+    var aa = Array.from($(".col"));
+    var tabArr = [];
+    // 获取格子随机数字位置
+    for (let i = 0; i < 4; i++) {
+        tabArr.push(cols.splice(0, 4));
+    }
+    var tempTabArr = tabArr.map(item => [...item]);
+    function randomNumDiv() {
+        let aa = Array.from($(".col"));
+        var reaa = [];
+        for (let i = 0; i < aa.length; i++) {
+            if ($(aa[i]).attr("data-isnum") == "false") {
+                reaa.push(aa[i]);
+            }
+        }
+        // console.log(reaa);
+        aa = reaa;
+        var div1Index = Math.floor(Math.random() * aa.length);
+        var div1 = aa[div1Index];
+        aa.splice(div1Index, 1);
+        // var div2Index = Math.floor(Math.random() * aa.length);
+        // var div2 = aa[div2Index];
+        // aa.splice(div2Index, 1);
+        var numDiv1 = $(`<div class="numDiv n2" data-x="${$(div1).attr("data-x")}" data-y="${$(div1).attr("data-y")}">2</div>`);
+        // var numDiv2 = $(`<div class="numDiv" data-x="${$(div2).attr("data-x")}" data-y="${$(div2).attr("data-y")}">2</div>`);
+        $(numDiv1).css({
+            left: div1.offsetLeft + "px",
+            top: div1.offsetTop + "px"
+        })
+        // $(numDiv2).css({
+        //     left: div2.offsetLeft + "px",
+        //     top: div2.offsetTop + "px"
+        // })
+        $(contaier).append(numDiv1);
+        // $(contaier).append(numDiv2);
+        $(div1).attr("data-isnum", true);
+        // $(div2).attr("data-isnum", true);
+        // var reaa = [];
+        // for (let i = 0; i < aa.length; i++) {
+        //     if ($(aa[i]).attr("data-isnum") == "false") {
+        //         reaa.push(aa[i]);
+        //     }
+        // }
+        // if (reaa.length <= 0) {
+        //     alert("gameover")
+        // }
+        // console.log($(".numDiv").length);
+    }
+
+    randomNumDiv();
+    randomNumDiv();
+
+    var startPosX = 0;
+    var endPosX = 0;
+    var startPosY = 0;
+    var endPosY = 0;
+    var mouseFlag = false;
+    contaier.onmousedown = (e) => {
+        mouseFlag = true;
+        startPosX = e.clientX;
+        startPosY = e.clientY;
+    }
+    var ainFlag = true;
+    window.onmouseup = (e) => {
+        if (!mouseFlag || !ainFlag) return
+        endPosX = e.clientX;
+        endPosY = e.clientY;
+        if (Math.abs(startPosX - endPosX) < 50 && Math.abs(startPosY - endPosY) < 50) return
+        if (Math.abs(startPosX - endPosX) >= Math.abs(startPosY - endPosY)) {
+            moveX(startPosX - endPosX)
+        } else {
+            moveY(startPosY - endPosY)
+        }
+        mouseFlag = false;
+    }
+    function moveY(val) {
+        val > 0 ? moveUp() : moveDown();
+    }
+    function moveX(val) {
+        val > 0 ? moveLeft() : moveRight();
+    }
+
+    function movePosY(y, type, islast, colNumArr) {
+        var numDivs = colNumArr;
+        var clearNum = 0;
+        // 做动画及合成
+        if (type) {
+            var x = 4;
+            for (let i = 0; i < numDivs.length; i++) {
+                x--;
+                $(tabArr[$(numDivs[i]).attr("data-x") * 1][y]).attr("data-isnum", false);
+                if ($(numDivs[i]).attr("data-clear") == "true") {
+                    clearNum++;
+                    let changediv = $(numDivs[i - 1]);
+                    let num = changediv.text();
+                    changediv.removeClass(`n${num}`).addClass(`n${num * 2}`).text(num * 2);
+                    if (islast && (numDivs.length - 1) === i) {
+                        $(numDivs[i]).animate({
+                            top: tabArr[x + clearNum][y].offsetTop + "px"
+                        }, 100, "linear", () => {
+                            ainFlag = true;
+                            randomNumDiv();
+                            $(numDivs[i]).remove();
+                        });
+                    } else {
+                        $(numDivs[i]).animate({
+                            top: tabArr[x + clearNum][y].offsetTop + "px"
+                        }, 100, "linear", () => {
+                            $(numDivs[i]).remove();
+                        });
+                    }
+                    continue
+                }
+                $(numDivs[i]).attr("data-x", x + clearNum);
+                $(tabArr[x + clearNum][y]).attr("data-isnum", true);
+                if (islast && (numDivs.length - 1) === i) {
+                    $(numDivs[i]).animate({
+                        top: tabArr[x + clearNum][y].offsetTop + "px"
+                    }, 100, "linear", () => {
+                        ainFlag = true;
+                        randomNumDiv();
+                    });
+                    return
+                }
+                $(numDivs[i]).animate({
+                    top: tabArr[x + clearNum][y].offsetTop + "px"
+                }, 100, "linear");
+
+            }
+
+
+        } else {
+            // 做动画以及合成
+            // console.log(numDivs);
+            for (let i = 0; i < numDivs.length; i++) {
+                $(tabArr[$(numDivs[i]).attr("data-x") * 1][$(numDivs[i]).attr("data-y") * 1]).attr("data-isnum", false);
+                if ($(numDivs[i]).attr("data-clear") == "true") {
+                    clearNum--;
+                    let changediv = $(numDivs[i - 1]);
+                    let num = changediv.text();
+                    changediv.removeClass(`n${num}`).addClass(`n${num * 2}`).text(num * 2);
+                    if (islast && (numDivs.length - 1) === i) {
+                        $(numDivs[i]).animate({
+                            top: tabArr[i + clearNum][y].offsetTop + "px"
+                        }, 100, "linear", () => {
+                            ainFlag = true;
+                            randomNumDiv();
+                            $(numDivs[i]).remove();
+                        });
+                    } else {
+                        $(numDivs[i]).animate({
+                            top: tabArr[i + clearNum][y].offsetTop + "px"
+                        }, 100, "linear", () => {
+                            $(numDivs[i]).remove();
+                        });
+                    }
+                    continue
+                }
+                $(numDivs[i]).attr("data-x", i + clearNum);
+                $(tabArr[i + clearNum][$(numDivs[i]).attr("data-y")]).attr("data-isnum", true);
+                if (islast && (numDivs.length - 1) === i) {
+                    $(numDivs[i]).animate({
+                        top: tabArr[i + clearNum][y].offsetTop + "px"
+                    }, 100, "linear", () => {
+                        ainFlag = true;
+                        randomNumDiv();
+                    });
+                    return
+                }
+                $(numDivs[i]).animate({
+                    top: tabArr[i + clearNum][y].offsetTop + "px"
+                }, 100, "linear");
+
+            }
+
+        }
+
+    }
+
+
+    function movePosX(x, type, islast, colNumArr) {
+        var numDivs = colNumArr;
+        var clearNum = 0;
+        // 做动画及合成
+        if (type) {
+            var y = 4;
+            for (let i = 0; i < numDivs.length; i++) {
+                y--;
+                $(tabArr[x][$(numDivs[i]).attr("data-y") * 1]).attr("data-isnum", false);
+                if ($(numDivs[i]).attr("data-clear") == "true") {
+                    clearNum++;
+                    let changediv = $(numDivs[i - 1]);
+                    let num = changediv.text();
+                    changediv.removeClass(`n${num}`).addClass(`n${num * 2}`).text(num * 2);
+                    if (islast && (numDivs.length - 1) === i) {
+                        $(numDivs[i]).animate({
+                            left: tabArr[x][y + clearNum].offsetLeft + "px"
+                        }, 100, "linear", () => {
+                            ainFlag = true;
+                            randomNumDiv();
+                            $(numDivs[i]).remove();
+                        });
+                    } else {
+                        $(numDivs[i]).animate({
+                            left: tabArr[x][y + clearNum].offsetLeft + "px"
+                        }, 100, "linear", () => {
+                            $(numDivs[i]).remove();
+                        });
+                    }
+                    continue
+                }
+                $(numDivs[i]).attr("data-y", y + clearNum);
+                $(tabArr[x][y + clearNum]).attr("data-isnum", true);
+                if (islast && (numDivs.length - 1) === i) {
+                    $(numDivs[i]).animate({
+                        left: tabArr[x][y + clearNum].offsetLeft + "px"
+                    }, 100, "linear", () => {
+                        ainFlag = true;
+                        randomNumDiv();
+                    });
+                    return
+                }
+                $(numDivs[i]).animate({
+                    left: tabArr[x][y + clearNum].offsetLeft + "px"
+                }, 100, "linear");
+
+            }
+        } else {
+            // 做动画以及合成
+            // console.log(numDivs);
+            for (let i = 0; i < numDivs.length; i++) {
+                $(tabArr[x][$(numDivs[i]).attr("data-y") * 1]).attr("data-isnum", false);
+                if ($(numDivs[i]).attr("data-clear") == "true") {
+                    clearNum--;
+                    let changediv = $(numDivs[i - 1]);
+                    let num = changediv.text();
+                    changediv.removeClass(`n${num}`).addClass(`n${num * 2}`).text(num * 2);
+                    if (islast && (numDivs.length - 1) === i) {
+                        $(numDivs[i]).animate({
+                            left: tabArr[x][i + clearNum].offsetLeft + "px"
+                        }, 100, "linear", () => {
+                            ainFlag = true;
+                            randomNumDiv();
+                            $(numDivs[i]).remove();
+                        });
+                    } else {
+                        $(numDivs[i]).animate({
+                            left: tabArr[x][i + clearNum].offsetLeft + "px"
+                        }, 100, "linear", () => {
+                            $(numDivs[i]).remove();
+                        });
+                    }
+                    continue
+                }
+                $(numDivs[i]).attr("data-y", i + clearNum);
+                $(tabArr[x][i + clearNum]).attr("data-isnum", true);
+                if (islast && (numDivs.length - 1) === i) {
+                    $(numDivs[i]).animate({
+                        left: tabArr[x][i + clearNum].offsetLeft + "px"
+                    }, 100, "linear", () => {
+                        ainFlag = true;
+                        randomNumDiv();
+                    });
+                    return
+                }
+                $(numDivs[i]).animate({
+                    left: tabArr[x][i + clearNum].offsetLeft + "px"
+                }, 100, "linear");
+
+            }
+        }
+
+    }
+    // 判断能够合成的方块 过滤 上滑
+    function upFilter(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < arr.length; j++) {
+                if ($(arr[minIndex]).attr("data-x") > $(arr[j]).attr("data-x")) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                let timp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = timp;
+            }
+        }
+        var isAni = false;
+        for (let i = 0; i < arr.length; i++) {
+            if (i >= arr.length - 1) break
+            if ($(arr[i]).attr("data-clear") == "true") continue
+            if ($(arr[i]).text() == $(arr[i + 1]).text()) {
+                isAni = true;
+                $(arr[i + 1]).attr("data-clear", "true");
+                $(arr[i + 1]).css("z-index", "1");
+            }
+        }
+        if ($(arr[0]).attr("data-x") != 0) isAni = true;
+        if (!isAni) {
+            for (let i = 0; i < arr.length; i++) {
+                if ($(arr[i]).attr("data-x") != i) {
+                    isAni = true;
+                    break
+                }
+            }
+        }
+        if (isAni) {
+            return arr
+        }
+    }
+
+    // 判断能够合成的方块 过滤 下滑
+    function downFilter(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < arr.length; j++) {
+                if ($(arr[minIndex]).attr("data-x") > $(arr[j]).attr("data-x")) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                let timp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = timp;
+            }
+        }
+        var isAni = false;
+        arr.reverse();
+        for (let i = 0; i < arr.length; i++) {
+            if (i >= arr.length - 1) break
+            if ($(arr[i]).attr("data-clear") == "true") continue
+            if ($(arr[i]).text() == $(arr[i + 1]).text()) {
+                isAni = true;
+                $(arr[i + 1]).attr("data-clear", "true");
+                $(arr[i + 1]).css("z-index", "1");
+            }
+        }
+        if ($(arr[0]).attr("data-x") != 3) isAni = true;
+        if (!isAni) {
+            var yLength = 3;
+            for (let i = 0; i < arr.length; i++) {
+                if ($(arr[i]).attr("data-x") != yLength) {
+                    isAni = true;
+                    break
+                }
+                yLength--;
+            }
+        }
+        if (isAni) {
+            return arr
+        }
+    }
+
+    // 判断能够合成的方块 过滤 左滑
+    function leftFilter(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < arr.length; j++) {
+                if ($(arr[minIndex]).attr("data-y") > $(arr[j]).attr("data-y")) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                let timp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = timp;
+            }
+        }
+        var isAni = false;
+        for (let i = 0; i < arr.length; i++) {
+            if (i >= arr.length - 1) break
+            if ($(arr[i]).attr("data-clear") == "true") continue
+            if ($(arr[i]).text() == $(arr[i + 1]).text()) {
+                isAni = true;
+                $(arr[i + 1]).attr("data-clear", "true");
+                $(arr[i + 1]).css("z-index", "1");
+            }
+        }
+        if ($(arr[0]).attr("data-y") != 0) isAni = true;
+        if (!isAni) {
+            for (let i = 0; i < arr.length; i++) {
+                if ($(arr[i]).attr("data-y") != i) {
+                    isAni = true;
+                    break
+                }
+            }
+        }
+        if (isAni) {
+            return arr
+        }
+
+    }
+
+
+    // 判断能够合成的方块 过滤 右滑
+    function rightFilter(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < arr.length; j++) {
+                if ($(arr[minIndex]).attr("data-y") > $(arr[j]).attr("data-y")) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex != i) {
+                let timp = arr[i];
+                arr[i] = arr[minIndex];
+                arr[minIndex] = timp;
+            }
+        }
+        var isAni = false;
+        arr.reverse();
+        for (let i = 0; i < arr.length; i++) {
+            if (i >= arr.length - 1) break
+            if ($(arr[i]).attr("data-clear") == "true") continue
+            if ($(arr[i]).text() == $(arr[i + 1]).text()) {
+                isAni = true;
+                $(arr[i + 1]).attr("data-clear", "true");
+                $(arr[i + 1]).css("z-index", "1");
+            }
+        }
+        if ($(arr[0]).attr("data-y") != 3) isAni = true;
+        if (!isAni) {
+            var xLength = 3;
+            for (let i = 0; i < arr.length; i++) {
+                if ($(arr[i]).attr("data-y") != xLength) {
+                    isAni = true;
+                    break
+                }
+                xLength--;
+            }
+        }
+        if (isAni) {
+            return arr
+        }
+
+    }
+
+    function moveUp() {
+        var numDivs = Array.from($(".numDiv"));
+        var colNumSArr = [[], [], [], []];
+        for (let i = 0; i < numDivs.length; i++) {
+            let index = $(numDivs[i]).attr("data-y") * 1;
+            colNumSArr[index].push(numDivs[i]);
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            if (!item.length) {
+                return
+            };
+            if (item.length != 1) {
+                return item
+            };
+            if ($(item[0]).attr("data-x") != 0) {
+                return item
+            };
+        });
+        if (!colNumSArr.length) {
+            return
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            let array = upFilter(item);
+            if (array) {
+                return array
+            }
+        });
+        // console.log(colNumSArr,colNumSArr.length);
+        colNumSArr.forEach((arr, i) => {
+            let isLast = colNumSArr.length - 1 == i;
+            movePosY($(arr[0]).attr("data-y"), 0, isLast, arr);
+        });
+
+    }
+
+
+
+    function moveDown() {
+        var numDivs = Array.from($(".numDiv"));
+        var colNumSArr = [[], [], [], []];
+        for (let i = 0; i < numDivs.length; i++) {
+            let index = $(numDivs[i]).attr("data-y") * 1;
+            colNumSArr[index].push(numDivs[i]);
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            if (!item.length) {
+                return
+            };
+            if (item.length != 1) {
+                return item
+            };
+            if ($(item[0]).attr("data-x") != 3) {
+                return item
+            };
+        });
+        if (!colNumSArr.length) {
+            return
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            let array = downFilter(item);
+            if (array) {
+                return array
+            }
+        });
+        // console.log(colNumSArr,colNumSArr.length);
+        colNumSArr.forEach((arr, i) => {
+            let isLast = colNumSArr.length - 1 == i;
+            movePosY($(arr[0]).attr("data-y"), 1, isLast, arr);
+        });
+
+    }
+    function moveLeft() {
+        var numDivs = Array.from($(".numDiv"));
+        var colNumSArr = [[], [], [], []];
+        for (let i = 0; i < numDivs.length; i++) {
+            let index = $(numDivs[i]).attr("data-x") * 1;
+            colNumSArr[index].push(numDivs[i]);
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            if (!item.length) {
+                return
+            };
+            if (item.length != 1) {
+                return item
+            };
+            if ($(item[0]).attr("data-y") != 0) {
+                return item
+            };
+        });
+        if (!colNumSArr.length) {
+            return
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            let array = leftFilter(item);
+            if (array) {
+                return array
+            }
+        });
+        // console.log(colNumSArr, colNumSArr.length);
+        colNumSArr.forEach((arr, i) => {
+            let isLast = colNumSArr.length - 1 == i;
+            movePosX($(arr[0]).attr("data-x"), 0, isLast, arr);
+        });
+
+
+    }
+    function moveRight() {
+        var numDivs = Array.from($(".numDiv"));
+        var colNumSArr = [[], [], [], []];
+        for (let i = 0; i < numDivs.length; i++) {
+            let index = $(numDivs[i]).attr("data-x") * 1;
+            colNumSArr[index].push(numDivs[i]);
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            if (!item.length) {
+                return
+            };
+            if (item.length != 1) {
+                return item
+            };
+            if ($(item[0]).attr("data-y") != 3) {
+                return item
+            };
+        });
+        if (!colNumSArr.length) {
+            return
+        }
+        colNumSArr = colNumSArr.filter((item) => {
+            let array = rightFilter(item);
+            if (array) {
+                return array
+            }
+        });
+        // console.log(colNumSArr, colNumSArr.length);
+        colNumSArr.forEach((arr, i) => {
+            let isLast = colNumSArr.length - 1 == i;
+            movePosX($(arr[0]).attr("data-x"), 1, isLast, arr);
+        });
+
+
+    }
+</script>
+
+</html>
